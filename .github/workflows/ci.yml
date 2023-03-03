@@ -1,0 +1,54 @@
+name: CI
+
+on: [ push ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Set up basic system
+        run: |
+          echo "::group::Update system"
+          pacman -Syu --noconfirm
+          echo "::endgroup::"
+
+          echo "::group::Install basic packages"
+          pacman -S --noconfirm --needed git base-devel
+          echo "::endgroup::"
+
+          echo "::group::Add non-privileged user to run makepkg"
+          useradd -m build
+          echo "build ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
+          echo "::endgroup::"
+      - name: Install dependencies for mommy
+        run: |
+          echo "::group::Install man-db"
+          pacman -S --noconfirm man-db
+          echo "::endgroup::"
+
+          echo "::group::Install ShellSpec"
+          git clone https://aur.archlinux.org/shellspec-bin.git
+          chown -R build:build ./shellspec-bin
+          cd ./shellspec-bin
+          sudo -u build makepkg -si --noconfirm
+          cd -
+          echo "::endgroup::"
+      - name: Checkout mommy
+        run: |
+          git clone --depth=1 -b dev https://github.com/FWDekker/mommy.git
+          chown -R build:build ./mommy
+
+      - name: Checkout aur-mommy
+        run: |
+          git clone --depth=1 -b "${{ github.ref_name }}" https://github.com/FWDekker/aur-mommy.git
+          chown -R build:build ./aur-mommy
+      - name: Patch aur-mommy
+        run: sudo -u build ./aur-mommy/update.sh dev
+      - name: Build and install AUR package
+        working-directory: ./aur-mommy
+        run: sudo -u build makepkg -si --noconfirm
+      - name: Test AUR package
+        run: MOMMY_EXEC=mommy MOMMY_TEST_MAN=0 ./mommy/test.sh
+      - name: Uninstall AUR package
+        run: pacman -R --noconfirm mommy
