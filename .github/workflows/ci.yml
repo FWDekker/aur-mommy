@@ -25,6 +25,7 @@ jobs:
         run: |
           echo "::group::Install man-db"
           pacman -S --noconfirm man-db
+          sed -i "/NoExtract.*man/d" /etc/pacman.conf  # Extract man pages
           echo "::endgroup::"
 
           echo "::group::Install ShellSpec"
@@ -35,20 +36,38 @@ jobs:
           cd -
           echo "::endgroup::"
       - name: Checkout mommy
-        run: |
-          git clone --depth=1 -b dev https://github.com/FWDekker/mommy.git
-          chown -R build:build ./mommy
+        uses: actions/checkout@v3
+        with:
+          repository: FWDekker/mommy
+          path: mommy
+          ref: dev
+      - name: Fix mommy directory ownership
+        run: chown -R build:build ./mommy/
 
       - name: Checkout aur-mommy
-        run: |
-          git clone --depth=1 -b "${{ github.ref_name }}" https://github.com/FWDekker/aur-mommy.git
-          chown -R build:build ./aur-mommy
-      - name: Patch aur-mommy
-        run: sudo -u build ./aur-mommy/update.sh dev
-      - name: Build and install AUR package
-        working-directory: ./aur-mommy
-        run: sudo -u build makepkg -si --noconfirm
+        uses: actions/checkout@v3
+        with:
+          path: aur-mommy
+      - name: Fix aur-mommy directory ownership
+        run: chown -R build:build ./aur-mommy/
       - name: Test AUR package
-        run: MOMMY_EXEC=mommy MOMMY_TEST_MAN=0 ./mommy/test.sh
-      - name: Uninstall AUR package
-        run: pacman -R --noconfirm mommy
+        run: |
+          cd ./aur-mommy/
+
+          echo "::group::Patch"
+          sudo -u build ./update.sh dev
+          echo "::endgroup::"
+
+          echo "::group::Build and install"
+          sudo -u build makepkg -si --noconfirm
+          echo "::endgroup::"
+
+          cd ../mommy/
+
+          echo "::group::Test"
+          MOMMY_EXEC=mommy make test
+          echo "::endgroup::"
+
+          echo "::group::Uninstall"
+          pacman -R --noconfirm mommy
+          echo "::endgroup::"
