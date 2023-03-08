@@ -35,6 +35,10 @@ jobs:
           sudo -u build makepkg -si --noconfirm
           cd -
           echo "::endgroup::"
+
+          echo "::group::Install additional shells"
+          pacman -S --noconfirm fish zsh
+          echo "::endgroup::"
       - name: Checkout mommy
         uses: actions/checkout@v3
         with:
@@ -65,7 +69,7 @@ jobs:
           cd ../mommy/
 
           echo "::group::Test"
-          MOMMY_EXEC=mommy make test
+          make system=1 test
           echo "::endgroup::"
 
           echo "::group::Uninstall"
