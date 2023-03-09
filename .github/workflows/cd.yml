@@ -3,20 +3,47 @@ name: CD
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
-  test:
+  push-to-aur:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Set up packages
+        run: sudo apt install git-filter-repo
       - name: Set up SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
         run: |
           mkdir -p "$HOME/.ssh"
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > "$HOME/.ssh/id_rsa"
-          chmod 600 "$HOME/.ssh/id_rsa"
-      - name: Set remote
-        run: git remote set-url origin ssh://aur@aur.archlinux.org/mommy.git
-      - name: Push changes
-        run: git push
+
+          echo "$SSH_PRIVATE_KEY" > "$HOME/.ssh/archlinux-aur"
+          echo "$SSH_PRIVATE_KEY" > "$HOME/.ssh/archlinux-aur"
+
+          echo "$SSH_PUBLIC_KEY" > "$HOME/.ssh/archlinux-aur.pub"
+
+          echo "Host aur.archlinux.org"                       > "$HOME/.ssh/config"
+          echo "    IdentityFile '$HOME/.ssh/archlinux-aur'" >> "$HOME/.ssh/config"
+          echo "    User aur"                                >> "$HOME/.ssh/config"
+
+          echo "|1|TILVkwST9FVP9Et4Cv9SEEUluOI=|z7cuI8ZSO2PHdH3TfbDgx2DZCsM= ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEuBKrPzbawxA/k2g6NcyV5jmqwJ2s+zpgZGZ7tpLIcN" >> "$HOME/.ssh/known_hosts"
+
+          chmod 700 "$HOME"/.ssh/
+          chmod 600 "$HOME"/.ssh/*
+          chmod 644 "$HOME"/.ssh/*.pub
+
+      - name: Checkout GitHub code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Filter files for AUR
+        run: |
+          # Rewrites history to remove files which should not be in the AUR repository
+          # 56fa85b is the commit at which this method was first used, and hence where the histories start to diverge
+          git filter-repo --force --invert-paths --paths-from-file ./.aurignore --refs 56fa85b47d2ea4460fb3622dec6639f5ef9049cc..master
+      - name: Push changes to AUR
+        run: |
+          git remote set-url origin ssh://aur@aur.archlinux.org/mommy.git
+          git fetch
+          git push

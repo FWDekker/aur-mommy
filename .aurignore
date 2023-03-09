@@ -1,0 +1,7 @@
+# These files are ignored when syncing with AUR
+
+glob:.github/**
+
+.aurignore
+README.md
+update.sh
