@@ -3,5 +3,6 @@
 glob:.github/**
 
 .aurignore
+.editorconfig
 README.md
 update.sh
