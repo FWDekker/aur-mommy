@@ -5,25 +5,24 @@ arch linux build files for [mommy](https://github.com/FWDekker/mommy), synchroni
 see [mommy](https://github.com/FWDekker/mommy) for installation instructions~
 
 
-## development ⚗️
-### warnings 🚨
+## ⚗️ development
+### 🚨 warnings
 * **never force push**
-* pushing to `master` immediately syncs to [aur](https://aur.archlinux.org/packages/mommy).
-  **this is irreversible**
-* **editing `.aurignore` may cause deployment failures.**
-  changes to this file should never affect commits that are already in the aur
-* keep `dev` up-to-date or ahead, but never behind `master`.
-  **do not push to `master` without also pushing to `dev`**
+* **commits pushed to `master` are irreversibly synced with [aur](https://aur.archlinux.org/packages/mommy)**
+* **`dev` must never be behind `master`**
+* **be careful when editing `.aurignore`**  
+  changes to this file should never affect commits that are already in the aur.
+  careless changes may cause deployment failures
 
-### process ⚖️
-* `aur-mommy#master` sort-of mirrors [the aur repository](https://aur.archlinux.org/packages/mommy)
-  (see description of the release process below)
-* `aur-mommy#master` builds `mommy#main`
-* `aur-mommy#dev` should build `mommy#dev` once `mommy#dev` has been merged into `mommy#main`
-  * alternatively, `aur-mommy#dev` builds `mommy#dev` after running `./update.sh dev` in `aur-mommy#dev`.
-    this operation should only be done locally!
+### 🫒 branch management
+#### 🤔 what do the branches contain?
+* `aur-mommy#master` contains the released build script for building `mommy#main`, and is mirrored to the
+  [aur repository](https://aur.archlinux.org/packages/mommy)
+* `aur-mommy#dev` contains unreleased changes for building `mommy#dev`, and is not mirrored to the aur repository  
+  (note: you can **locally** run `./update.sh <commit>` to make the build script build `mommy#<commit>`)
 
-in other words, if your change...
+#### 🔍 where should i push my changes?
+if your change...
 * **works for both `mommy#main` and `mommy#dev`**  
   _(e.g. fixing a typo.)_  
   push it to `aur-mommy#master` and `aur-mommy#dev`
@@ -38,18 +37,20 @@ in other words, if your change...
   _(e.g. adding `rm -rf /` into `PKGBUILD`)_  
   don't push it~
 
-### release 📯
+### 📯 release
 the release process is fully automatic.
 no human intervention required.
 below is a brief summary of how it works~
 
 when `mommy#main` is pushed to, [its cd action](https://github.com/FWDekker/mommy/blob/main/.github/workflows/cd.yml)
-automatically updates `aur-mommy` as follows:
-  * sync `master` and `dev` with each other
-  * bump the version information in `PKGBUILD` and `.SRCINFO` using `./update.sh <version>`
-  * trigger [`aur-mommy`'s cd action](https://github.com/FWDekker/aur-mommy/blob/master/.github/workflows/cd.yml):
-    * clone `aur-mommy`
-    * remove files listed in `.aurignore` the history using
-      [git filter-repo](https://github.com/newren/git-filter-repo/), so aur doesn't complain about nested directories
-      and unwanted files
-    * push the filtered repo to [aur](https://aur.archlinux.org/packages/mommy)
+1. merges `aur-mommy#dev` into `aur-mommy#master`
+2. runs [`update.sh`](https://github.com/FWDekker/aur-mommy/blob/master/update.sh) on `aur-mommy#master` to bump version
+   info,
+3. and commits and pushes these changes to `aur-mommy#master`~
+
+this then invokes [`aur-mommy`'s cd action](https://github.com/FWDekker/aur-mommy/blob/dev/.github/workflows/cd.yml),
+which
+1. removes files listed in `.aurignore` the history using
+   [git filter-repo](https://github.com/newren/git-filter-repo/), so aur doesn't complain about nested directories
+   and unwanted files, and
+2. pushes the filtered repo to [aur](https://aur.archlinux.org/packages/mommy)~
