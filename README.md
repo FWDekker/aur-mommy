@@ -16,30 +16,34 @@ see [mommy](https://github.com/FWDekker/mommy) for installation instructions~
 
 ### 🫒 branch management
 #### 🤔 what do the branches contain?
-* `aur-mommy#master` contains the released build script for building `mommy#main`, and is mirrored to the
+* `aur-mommy#master` contains the released build script for building the
+  [latest release of `mommy`](https://github.com/FWDekker/mommy/releases/latest), and is mirrored to the
   [aur repository](https://aur.archlinux.org/packages/mommy)
-* `aur-mommy#dev` contains unreleased changes for building `mommy#dev`, and is not mirrored to the aur repository  
-  (note: you can **locally** run `./update.sh <commit>` to make the build script build `mommy#<commit>`)
+* `aur-mommy#dev` contains the unreleased build script for building the latest commit to `mommy#main`, and is not
+  mirrored to the aur repository
+
+if you **locally** want to point the build script to a different commit, run `./update.sh <commit>` to make it build
+`mommy#<commit>`~
 
 #### 🔍 where should i push my changes?
 > ⚠️ below, we will be comparing branches across different repos!
 >
 > `mommy#dev` is not `aur-mommy#dev`!
 
-if your change...
-* **works for both `mommy#main` and `mommy#dev`**  
-  _(e.g. fixing a typo.)_  
-  push it to `aur-mommy#master` and `aur-mommy#dev`
-* **works for `mommy#dev` but breaks `mommy#main`**  
-  _(e.g. using new parameters for `make`.)_  
-  push it to `aur-mommy#dev` only.
-  your change will appear in `aur-mommy#master` once `mommy#dev` is merged into `mommy#main`
-* **works for `mommy#main` but does not make sense for `mommy#dev`**  
-  _(e.g. fixing a typo in a line that has been removed in `aur-mommy#dev`.)_  
-  push it to `aur-mommy#master` and rebase `aur-mommy#dev` onto `aur-mommy#master`
-* **breaks both `aur-mommy#master` and `aur-mommy#dev`**  
-  _(e.g. adding `rm -rf /` into `PKGBUILD`)_  
-  don't push it~
+note that pushing to `aur-mommy#master` will also [immediately sync](#-release) to the aur.
+therefore, most changes should instead go to `aur-mommy#dev`.
+these changes will be merged into `aur-mommy#master` automatically when a new [mommy](https://github.com/FWDekker/mommy)
+release is created~
+
+if all changes in a commit are to files listed in
+[`.aurignore`](https://github.com/FWDekker/aur-mommy/blob/master/.aurignore) (of that branch), no changes are pushed to
+the aur, so those commits are really quite safe.
+but keep in mind, **`aur-mommy#dev` must never be behind `aur-mommy#master`**~
+
+for all other cases, consider whether you want to push only to `aur-mommy#dev`, or to both `aur-mommy#dev` _and_
+`aur-mommy#master`.
+this choice should be based on compatibility of the change with
+[the version that branch points to](#-what-do-the-branches-contain)~
 
 ### 📯 release
 the release process is fully automatic.

@@ -40,16 +40,16 @@ jobs:
           pacman -S --noconfirm fish zsh
           echo "::endgroup::"
       - name: Checkout mommy
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: FWDekker/mommy
           path: mommy
-          ref: dev
+          ref: main
       - name: Fix mommy directory ownership
         run: chown -R build:build ./mommy/
 
       - name: Checkout aur-mommy
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: aur-mommy
       - name: Fix aur-mommy directory ownership
