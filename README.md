@@ -22,6 +22,10 @@ see [mommy](https://github.com/FWDekker/mommy) for installation instructions~
   (note: you can **locally** run `./update.sh <commit>` to make the build script build `mommy#<commit>`)
 
 #### 🔍 where should i push my changes?
+> ⚠️ below, we will be comparing branches across different repos!
+>
+> `mommy#dev` is not `aur-mommy#dev`!
+
 if your change...
 * **works for both `mommy#main` and `mommy#dev`**  
   _(e.g. fixing a typo.)_  
@@ -42,7 +46,8 @@ the release process is fully automatic.
 no human intervention required.
 below is a brief summary of how it works~
 
-when `mommy#main` is pushed to, [its cd action](https://github.com/FWDekker/mommy/blob/main/.github/workflows/cd.yml)
+when a new [mommy](https://github.com/FWDekker/mommy) release is created,
+[its cd action](https://github.com/FWDekker/mommy/blob/main/.github/workflows/cd.yml)
 1. merges `aur-mommy#dev` into `aur-mommy#master`
 2. runs [`update.sh`](https://github.com/FWDekker/aur-mommy/blob/master/update.sh) on `aur-mommy#master` to bump version
    info,
