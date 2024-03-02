@@ -59,7 +59,7 @@ jobs:
           cd ./aur-mommy/
 
           echo "::group::Patch"
-          sudo -u build ./update.sh dev
+          sudo -u build ./update.sh main
           echo "::endgroup::"
 
           echo "::group::Build and install"

@@ -11,7 +11,7 @@ cd -P -- "$(dirname -- "$0")"
 
 VERSION="${1:?Version not specified}"
 
-if [ "${VERSION::1}" = "v" ]; then
+if [ -z "${VERSION##v*}" ]; then
     VERSION="${VERSION##v}"
     URL="git+https://github.com/FWDekker/mommy.git#tag=v\$pkgver"
     REL="1"
