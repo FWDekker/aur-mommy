@@ -29,10 +29,11 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Install ShellSpec"
-          git clone https://aur.archlinux.org/shellspec-bin.git
-          chown -R build:build ./shellspec-bin
-          cd ./shellspec-bin
+          git clone https://aur.archlinux.org/shellspec-git.git /tmp/shellspec-git
+          chown -R build:build /tmp/shellspec-git
+          cd /tmp/shellspec-git
           sudo -u build makepkg -si --noconfirm
+          rm -rf /tmp/shellspec-git
           cd -
           echo "::endgroup::"
 
